@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Simplyself Quiz</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#f0f2f5;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{background:#fff;border-radius:24px;padding:40px;max-width:580px;width:100%;box-shadow:0 8px 48px rgba(0,0,0,0.09)}
+.brand{font-size:12px;font-weight:800;letter-spacing:3px;color:#bbb;text-transform:uppercase;margin-bottom:24px}
+.section-label{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#7c3aed;margin-bottom:10px}
+.progress-wrap{background:#eee;border-radius:99px;height:5px;margin-bottom:8px}
+.progress-bar{background:linear-gradient(90deg,#4f46e5,#7c3aed);height:5px;border-radius:99px;transition:width .5s ease}
+.progress-label{font-size:12px;color:#bbb;margin-bottom:28px}
+.question{font-size:19px;font-weight:700;color:#1a1a2e;margin-bottom:8px;line-height:1.4}
+.subtitle{font-size:13px;color:#999;margin-bottom:20px}
+.options{display:flex;flex-direction:column;gap:10px}
+.options.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt{border:2px solid #e8e8f0;background:#fff;border-radius:12px;padding:13px 16px;font-size:14px;color:#333;cursor:pointer;text-align:left;transition:all .18s;display:flex;align-items:center;gap:10px}
+.opt:hover{border-color:#4f46e5;background:#f5f3ff;color:#4f46e5}
+.opt.selected{border-color:#4f46e5;background:#f5f3ff;color:#4f46e5;font-weight:600}
+.opt .icon{font-size:18px;flex-shrink:0}
+.multi-hint{font-size:12px;color:#aaa;margin-bottom:12px}
+.next-btn{margin-top:18px;background:linear-gradient(90deg,#4f46e5,#7c3aed);color:#fff;border:none;border-radius:12px;padding:14px 28px;font-size:15px;font-weight:700;cursor:pointer;transition:opacity .2s}
+.next-btn:hover{opacity:.9}
+.next-btn:disabled{opacity:.35;cursor:not-allowed}
+.text-input{width:100%;border:2px solid #e8e8f0;border-radius:12px;padding:13px 16px;font-size:15px;color:#1a1a2e;outline:none;transition:border-color .2s;margin-bottom:14px}
+.text-input:focus{border-color:#4f46e5}
+.num-input{width:100%;border:2px solid #e8e8f0;border-radius:12px;padding:13px 16px;font-size:15px;color:#1a1a2e;outline:none;transition:border-color .2s;margin-bottom:6px}
+.num-input:focus{border-color:#4f46e5}
+.num-label{font-size:12px;color:#aaa;margin-bottom:6px}
+.section-intro{text-align:center;padding:16px 0}
+.section-intro .big-icon{font-size:52px;margin-bottom:14px}
+.section-intro h2{font-size:22px;font-weight:800;color:#1a1a2e;margin-bottom:8px}
+.section-intro p{font-size:14px;color:#888;margin-bottom:24px;line-height:1.6}
+
+/* result */
+.result{display:none}
+.result.active{display:block}
+.quiz-body.hidden{display:none}
+.hi-name{font-size:22px;font-weight:800;color:#1a1a2e;margin-bottom:4px}
+.hi-sub{font-size:13px;color:#aaa;margin-bottom:20px}
+.summary-box{background:#f5f3ff;border-left:4px solid #4f46e5;border-radius:12px;padding:16px 20px;font-size:13px;color:#555;line-height:2;margin-bottom:24px}
+.summary-box span{font-weight:700;color:#1a1a2e}
+
+/* package card */
+.pkg-card{border-radius:18px;padding:28px;margin-bottom:20px;position:relative;overflow:hidden}
+.pkg-card.start{background:linear-gradient(135deg,#eef2ff,#e0e7ff);border:2px solid #c7d2fe}
+.pkg-card.optimizer{background:linear-gradient(135deg,#fff7ed,#ffedd5);border:2px solid #fed7aa}
+.pkg-card.edge{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:2px solid #bbf7d0}
+.pkg-badge{display:inline-block;font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;padding:4px 10px;border-radius:99px;margin-bottom:12px}
+.pkg-card.start .pkg-badge{background:#4f46e5;color:#fff}
+.pkg-card.optimizer .pkg-badge{background:#ea580c;color:#fff}
+.pkg-card.edge .pkg-badge{background:#16a34a;color:#fff}
+.pkg-name{font-size:24px;font-weight:900;color:#1a1a2e;margin-bottom:4px}
+.pkg-tagline{font-size:13px;color:#777;margin-bottom:14px}
+.pkg-price{font-size:32px;font-weight:900;color:#1a1a2e;margin-bottom:16px}
+.pkg-price sup{font-size:14px;font-weight:700;vertical-align:top;margin-top:8px;display:inline-block;margin-right:2px}
+.pkg-price span{font-size:14px;font-weight:500;color:#888}
+.pkg-items{list-style:none;margin-bottom:20px}
+.pkg-items li{font-size:13px;color:#444;padding:4px 0;display:flex;align-items:center;gap:8px}
+.pkg-items li::before{content:'✓';font-weight:800;color:#4f46e5;flex-shrink:0}
+.pkg-card.optimizer .pkg-items li::before{color:#ea580c}
+.pkg-card.edge .pkg-items li::before{color:#16a34a}
+.cta-btn{display:block;width:100%;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:700;cursor:pointer;text-align:center;text-decoration:none;transition:opacity .2s;color:#fff}
+.pkg-card.start .cta-btn{background:linear-gradient(90deg,#4f46e5,#6366f1)}
+.pkg-card.optimizer .cta-btn{background:linear-gradient(90deg,#ea580c,#f97316)}
+.pkg-card.edge .cta-btn{background:linear-gradient(90deg,#16a34a,#22c55e)}
+.cta-btn:hover{opacity:.88}
+.retake{display:block;text-align:center;margin-top:14px;font-size:13px;color:#bbb;cursor:pointer;text-decoration:underline}
+.retake:hover{color:#4f46e5}
+.fade{animation:fadeUp .32s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="brand">Simplyself</div>
+  <div class="quiz-body" id="quizBody">
+    <div class="progress-wrap"><div class="progress-bar" id="pBar" style="width:3%"></div></div>
+    <div class="progress-label" id="pLabel"></div>
+    <div id="stepContent" class="fade"></div>
+  </div>
+  <div class="result" id="result"></div>
+</div>
+
+<script>
+const a = {};
+
+const SECTIONS = [
+  {id:'welcome',label:''},
+  {id:'personal',label:'About You'},
+  {id:'body',label:'Your Body'},
+  {id:'goals',label:'Your Goals'},
+  {id:'lifestyle',label:'Lifestyle'},
+  {id:'diet',label:'Nutrition'},
+  {id:'health',label:'Health & Wellbeing'},
+  {id:'finish',label:''},
+];
+
+const STEPS = [
+  {sec:'welcome',type:'intro',icon:'💊',title:'Find your perfect sport supplement',body:"Answer a few questions about your body, lifestyle and goals. We'll match you to the right Simplyself package in under 5 minutes.",btn:'Start the Quiz'},
+  {sec:'personal',type:'email',key:'email',q:"What's your email address?",sub:"We'll send your personalised results there."},
+  {sec:'personal',type:'text',key:'name',q:"What's your name?",sub:"Let's make this personal 👋"},
+  {sec:'personal',type:'gender',key:'gender',q:(a)=>`Nice to meet you, ${a.name}! What best describes you?`,sub:'This helps us calibrate your formula.'},
+  {sec:'personal',type:'number',key:'age',q:"How old are you?",sub:'Age affects your nutrient needs significantly.',unit:'years',min:16,max:90},
+  {sec:'body',type:'number',key:'height',q:'What is your height?',sub:'We use this to calculate your BMI.',unit:'cm',min:140,max:220},
+  {sec:'body',type:'number',key:'weight',q:'What is your weight?',sub:'',unit:'kg',min:40,max:200},
+  {sec:'goals',type:'multi',key:'goals',max:3,q:(a)=>`${a.name}, what are your top health goals?`,sub:"Select up to 3 — we'll build your formula around these.",opts:[
+    {icon:'💪',label:'Build muscle'},{icon:'🔥',label:'Lose weight'},{icon:'⚡',label:'Boost energy'},
+    {icon:'🏃',label:'Improve endurance'},{icon:'🧠',label:'Sharpen focus'},{icon:'😴',label:'Better sleep'},
+    {icon:'🛡️',label:'Immune support'},{icon:'✨',label:'Skin & hair health'},{icon:'🧬',label:'Longevity & recovery'},
+  ]},
+  {sec:'lifestyle',type:'single',key:'activity',q:'How would you describe your activity level?',sub:'',opts:[
+    {icon:'🛋️',label:'Sedentary – little to no exercise'},
+    {icon:'🚶',label:'Lightly active – 1–2x per week'},
+    {icon:'🏋️',label:'Moderately active – 3–4x per week'},
+    {icon:'🏆',label:'Very active – 5+ times per week'},
+    {icon:'🥇',label:'Professional / competitive athlete'},
+  ]},
+  {sec:'lifestyle',type:'single',key:'training',q:(a)=>`What type of training do you mostly do, ${a.name}?`,sub:'',opts:[
+    {icon:'🏋️',label:'Weightlifting / Strength'},{icon:'🏃',label:'Running / Cardio'},
+    {icon:'🔥',label:'HIIT / CrossFit'},{icon:'⚽',label:'Team sports'},
+    {icon:'🧘',label:'Yoga / Pilates'},{icon:'🔀',label:'Mixed / Other'},
+  ]},
+  {sec:'lifestyle',type:'scale',key:'stress',q:'How would you rate your daily stress levels?',sub:'',opts:['Very low','Low','Moderate','High','Very high']},
+  {sec:'lifestyle',type:'scale',key:'sleep',q:'How many hours of sleep do you get on average?',sub:'',opts:['Less than 5h','5–6h','6–7h','7–8h','8h+']},
+  {sec:'lifestyle',type:'scale',key:'sleepQuality',q:'How would you rate your sleep quality?',sub:'',opts:['Very poor','Poor','Average','Good','Excellent']},
+  {sec:'lifestyle',type:'single',key:'sunExposure',q:'How much sun exposure do you get daily?',sub:'Vitamin D needs vary with sun exposure.',opts:[
+    {icon:'🌧️',label:'Very little – mostly indoors'},
+    {icon:'🌥️',label:'Some – occasional outdoor time'},
+    {icon:'☀️',label:'Moderate – regular outdoor time'},
+    {icon:'🌞',label:'A lot – outdoors most of the day'},
+  ]},
+  {sec:'diet',type:'single',key:'diet',q:'How would you describe your diet?',sub:'',opts:[
+    {icon:'🥩',label:'Omnivore – I eat everything'},
+    {icon:'🐟',label:'Pescatarian – fish but no meat'},
+    {icon:'🥦',label:'Vegetarian – no meat or fish'},
+    {icon:'🌱',label:'Vegan – fully plant-based'},
+    {icon:'🥑',label:'Keto / Low-carb'},
+  ]},
+  {sec:'diet',type:'scale',key:'vegIntake',q:'How many portions of fruit & veg do you eat per day?',sub:'',opts:['0–1','2–3','4–5','6+']},
+  {sec:'diet',type:'scale',key:'waterIntake',q:'How much water do you drink daily?',sub:'',opts:['Less than 1L','1–1.5L','1.5–2.5L','2.5L+']},
+  {sec:'diet',type:'multi',key:'dietFlags',max:5,q:'Any of the following apply to you?',sub:'Select all that apply.',opts:[
+    {icon:'🥛',label:'Lactose intolerant'},{icon:'🌾',label:'Gluten-free'},{icon:'🥜',label:'Nut allergy'},
+    {icon:'☕',label:'High caffeine intake'},{icon:'🍺',label:'Regular alcohol intake'},{icon:'🚫',label:'None of the above'},
+  ]},
+  {sec:'health',type:'scale',key:'energy',q:'How are your daily energy levels?',sub:'',opts:['Very low','Low','Average','Good','Excellent']},
+  {sec:'health',type:'scale',key:'digestion',q:'How is your digestion in general?',sub:'',opts:['Very poor','Poor','Average','Good','Excellent']},
+  {sec:'health',type:'scale',key:'skinHair',q:'How would you rate the condition of your skin and hair?',sub:'',opts:['Very poor','Poor','Average','Good','Excellent']},
+  {sec:'health',type:'multi',key:'symptoms',max:6,q:'Do you experience any of these regularly?',sub:'Select all that apply.',opts:[
+    {icon:'😴',label:'Fatigue / low energy'},{icon:'🌀',label:'Brain fog'},{icon:'😟',label:'Mood swings'},
+    {icon:'🦴',label:'Joint / muscle pain'},{icon:'🤧',label:'Often get sick'},{icon:'💤',label:'Poor sleep'},
+    {icon:'🫀',label:'High stress'},{icon:'💇',label:'Hair loss'},{icon:'🚫',label:'None of the above'},
+  ]},
+  {sec:'health',type:'multi',key:'conditions',max:6,q:'Do you have any of the following?',sub:'Select all that apply.',opts:[
+    {icon:'🩸',label:'Diabetes'},{icon:'💔',label:'Heart condition'},{icon:'🦋',label:'Thyroid issues'},
+    {icon:'🤰',label:'Pregnant / breastfeeding'},{icon:'💊',label:'Taking medication'},{icon:'🚫',label:'None of the above'},
+  ]},
+  {sec:'finish',type:'intro',icon:'🎯',title:(a)=>`Almost done, ${a.name}!`,body:"We're calculating your personalised supplement package based on your answers…",btn:'See My Results',isFinish:true},
+];
+
+const PACKAGES = {
+  start:{
+    key:'start',
+    name:'The Start',
+    tagline:'For those just getting started',
+    price:'69',
+    badge:'Essential',
+    items:['Whey Protein','Creatine Monohydrate','Omega-3','Multivitamin & mineral blend'],
+    url:'https://simpliself.com/core-package',
+    cta:'Get The Start →'
+  },
+  optimizer:{
+    key:'optimizer',
+    name:'The Optimizer',
+    tagline:'For the routine optimizer',
+    price:'89',
+    badge:'Most Popular',
+    items:['Whey Protein','Creatine Monohydrate','Omega-3','Vitamin D3','Vitamin B Complex','Magnesium'],
+    url:'https://simpliself.com/performpackage',
+    cta:'Get The Optimizer →'
+  },
+  edge:{
+    key:'edge',
+    name:'The Edge',
+    tagline:'For competitive athletes',
+    price:'109',
+    badge:'Peak Performance',
+    items:['Everything in The Optimizer, plus:','Extra Omega-3','Extra Magnesium','Vitamin C','Zinc'],
+    url:'https://simpliself.com/elite-package',
+    cta:'Get The Edge →'
+  }
+};
+
+function recommendPackage(){
+  const actMap = {
+    'Sedentary – little to no exercise':0,
+    'Lightly active – 1–2x per week':1,
+    'Moderately active – 3–4x per week':2,
+    'Very active – 5+ times per week':3,
+    'Professional / competitive athlete':4
+  };
+  const level = actMap[a.activity] ?? 1;
+  const goals = a.goals || [];
+  const perfGoals = ['Build muscle','Improve endurance','Longevity & recovery','Sharpen focus','Boost energy'];
+  const perfScore = goals.filter(g=>perfGoals.includes(g)).length;
+
+  // Edge: professional/very active OR 5x+ with performance goals
+  if(level >= 3 && perfScore >= 1) return 'edge';
+  if(level === 4) return 'edge';
+  // Optimizer: moderately active 3-4x OR very active with light goals
+  if(level >= 2 && perfScore >= 1) return 'optimizer';
+  if(level === 3) return 'optimizer';
+  // Start: everyone else
+  return 'start';
+}
+
+const totalQ = STEPS.filter(s=>s.type!=='intro').length;
+let cur = 0;
+
+function render(){
+  const s = STEPS[cur];
+  const sec = SECTIONS.find(x=>x.id===s.sec);
+  const nonIntro = STEPS.slice(0,cur).filter(x=>x.type!=='intro').length;
+  const pct = Math.max(3,Math.round((nonIntro/totalQ)*100));
+  document.getElementById('pBar').style.width=pct+'%';
+  document.getElementById('pLabel').textContent=s.type==='intro'?'':`${sec?.label?sec.label+' · ':''}Step ${nonIntro} of ${totalQ}`;
+
+  const el=document.getElementById('stepContent');
+  el.className='fade'; void el.offsetWidth;
+
+  const q=typeof s.q==='function'?s.q(a):s.q;
+  const title=typeof s.title==='function'?s.title(a):s.title;
+
+  if(s.type==='intro'){
+    el.innerHTML=`<div class="section-intro">
+      <div class="big-icon">${s.icon}</div>
+      <h2>${title}</h2>
+      <p>${s.body}</p>
+      <button class="next-btn" onclick="advance()">${s.btn}</button>
+    </div>`;
+    return;
+  }
+
+  let html='';
+  if(sec?.label) html+=`<div class="section-label">${sec.label}</div>`;
+  html+=`<div class="question">${q}</div>`;
+  if(s.sub) html+=`<div class="subtitle">${s.sub}</div>`;
+
+  if(s.type==='email'||s.type==='text'){
+    const t=s.type==='email'?'email':'text';
+    const ph=s.type==='email'?'you@example.com':'Your first name';
+    html+=`<input class="text-input" type="${t}" id="tInput" placeholder="${ph}" value="${a[s.key]||''}"/>
+    <button class="next-btn" id="nBtn" onclick="submitText('${s.key}')" disabled>Continue →</button>`;
+  } else if(s.type==='gender'){
+    const opts=[{icon:'♂️',label:'Male'},{icon:'♀️',label:'Female'},{icon:'⚧',label:'Non-binary'},{icon:'🤷',label:'Prefer not to say'}];
+    html+=`<div class="options grid">${opts.map(o=>`<button class="opt${a[s.key]===o.label?' selected':''}" onclick="pick('${s.key}','${o.label}',this)"><span class="icon">${o.icon}</span>${o.label}</button>`).join('')}</div>`;
+  } else if(s.type==='single'){
+    html+=`<div class="options">${s.opts.map(o=>`<button class="opt${a[s.key]===o.label?' selected':''}" onclick="pick('${s.key}','${o.label}',this)"><span class="icon">${o.icon}</span>${o.label}</button>`).join('')}</div>`;
+  } else if(s.type==='multi'){
+    const sel=a[s.key]||[];
+    html+=`<div class="multi-hint">Select up to ${s.max}</div>
+    <div class="options grid">${s.opts.map(o=>`<button class="opt${sel.includes(o.label)?' selected':''}" onclick="toggleMulti('${s.key}',${s.max},'${o.label}',this)"><span class="icon">${o.icon}</span>${o.label}</button>`).join('')}</div>
+    <button class="next-btn" id="nBtn" onclick="advance()" ${!sel.length?'disabled':''}>Continue →</button>`;
+  } else if(s.type==='scale'){
+    html+=`<div class="options">${s.opts.map(o=>`<button class="opt${a[s.key]===o?' selected':''}" onclick="pick('${s.key}','${o}',this)">${o}</button>`).join('')}</div>`;
+  } else if(s.type==='number'){
+    html+=`<div class="num-label">${s.unit}</div>
+    <input class="num-input" type="number" id="tInput" min="${s.min}" max="${s.max}" placeholder="e.g. ${Math.round((s.min+s.max)/2)}" value="${a[s.key]||''}"/>
+    <button class="next-btn" id="nBtn" onclick="submitNum('${s.key}',${s.min},${s.max})" style="margin-top:14px" ${!a[s.key]?'disabled':''}>Continue →</button>`;
+  }
+
+  el.innerHTML=html;
+
+  if(s.type==='email'||s.type==='text'){
+    const inp=document.getElementById('tInput');
+    inp.focus();
+    inp.addEventListener('input',()=>{ document.getElementById('nBtn').disabled=inp.value.trim().length<2; });
+    inp.addEventListener('keydown',e=>{ if(e.key==='Enter') submitText(s.key); });
+    document.getElementById('nBtn').disabled=(a[s.key]||'').length<2;
+  }
+  if(s.type==='number'){
+    const inp=document.getElementById('tInput');
+    inp.focus();
+    inp.addEventListener('input',()=>{ const v=parseInt(inp.value); document.getElementById('nBtn').disabled=!(v>=s.min&&v<=s.max); });
+    inp.addEventListener('keydown',e=>{ if(e.key==='Enter') submitNum(s.key,s.min,s.max); });
+  }
+}
+
+function pick(key,val,btn){
+  a[key]=val;
+  btn.closest('.options').querySelectorAll('.opt').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  setTimeout(advance,280);
+}
+
+function toggleMulti(key,max,val,btn){
+  if(!a[key]) a[key]=[];
+  if(val==='None of the above'){
+    a[key]=['None of the above'];
+    btn.closest('.options').querySelectorAll('.opt').forEach(b=>b.classList.remove('selected'));
+    btn.classList.add('selected');
+  } else {
+    a[key]=a[key].filter(x=>x!=='None of the above');
+    if(a[key].includes(val)){ a[key]=a[key].filter(x=>x!==val); btn.classList.remove('selected'); }
+    else if(a[key].length<max){ a[key].push(val); btn.classList.add('selected'); }
+  }
+  document.getElementById('nBtn').disabled=a[key].length===0;
+}
+
+function submitText(key){
+  const v=document.getElementById('tInput').value.trim();
+  if(v.length<2) return;
+  a[key]=v; advance();
+}
+
+function submitNum(key,mn,mx){
+  const v=parseInt(document.getElementById('tInput').value);
+  if(v>=mn&&v<=mx){ a[key]=v; advance(); }
+}
+
+function advance(){
+  if(cur<STEPS.length-1){ cur++; render(); }
+  else showResult();
+}
+
+function bmi(){
+  const h=a.height/100,w=a.weight;
+  if(!h||!w) return null;
+  return (w/(h*h)).toFixed(1);
+}
+
+function showResult(){
+  document.getElementById('quizBody').classList.add('hidden');
+  const r=document.getElementById('result');
+  r.classList.add('active');
+
+  const pkgKey=recommendPackage();
+  const pkg=PACKAGES[pkgKey];
+  const bmiVal=bmi();
+  const bmiLabel=bmiVal<18.5?'underweight':bmiVal<25?'a healthy weight':bmiVal<30?'overweight':'obese';
+  const goals=(a.goals||[]).join(', ').toLowerCase();
+  const symptoms=(a.symptoms||[]).filter(x=>x!=='None of the above');
+  const dietFlags=(a.dietFlags||[]).filter(x=>x!=='None of the above');
+  const conditions=(a.conditions||[]).filter(x=>x!=='None of the above');
+
+  let lines=[];
+  lines.push(`You're a <span>${a.age}-year-old ${a.gender?.toLowerCase()}</span> at <span>${bmiLabel}</span> (BMI ${bmiVal}).`);
+  lines.push(`Your top goals are <span>${goals}</span>.`);
+  lines.push(`You're <span>${a.activity?.split('–')[0].trim().toLowerCase()}</span>, mostly doing <span>${a.training?.toLowerCase()}</span>.`);
+  lines.push(`Sleep: <span>${a.sleep}</span>, quality <span>${a.sleepQuality?.toLowerCase()}</span>. Stress: <span>${a.stress?.toLowerCase()}</span>.`);
+  lines.push(`Diet: <span>${a.diet?.toLowerCase()}</span>. Water: <span>${a.waterIntake}</span>. Fruit & veg: <span>${a.vegIntake}</span> portions/day.`);
+  if(dietFlags.length) lines.push(`Dietary notes: <span>${dietFlags.join(', ').toLowerCase()}</span>.`);
+  if(symptoms.length) lines.push(`Regular symptoms: <span>${symptoms.join(', ').toLowerCase()}</span>.`);
+  if(conditions.length) lines.push(`Health notes: <span>${conditions.join(', ').toLowerCase()}</span>.`);
+
+  r.innerHTML=`
+    <div class="hi-name">Here's your profile, ${a.name}! 🎯</div>
+    <div class="hi-sub">Based on your answers, here's what we found 👇</div>
+    <div class="summary-box">${lines.join('<br/>')}</div>
+    <div class="pkg-card ${pkgKey}">
+      <div class="pkg-badge">${pkg.badge}</div>
+      <div class="pkg-name">${pkg.name}</div>
+      <div class="pkg-tagline">${pkg.tagline}</div>
+      <div class="pkg-price"><sup>EUR</sup>${pkg.price}<span> /month</span></div>
+      <ul class="pkg-items">${pkg.items.map(i=>`<li>${i}</li>`).join('')}</ul>
+      <a class="cta-btn" href="${pkg.url}" target="_blank">${pkg.cta}</a>
+    </div>
+    <span class="retake" id="retakeBtn">Retake the quiz</span>
+  `;
+
+  document.getElementById('retakeBtn').onclick=()=>{
+    cur=0; Object.keys(a).forEach(k=>delete a[k]);
+    r.classList.remove('active');
+    r.innerHTML='';
+    document.getElementById('quizBody').classList.remove('hidden');
+    render();
+  };
+}
+
+render();
+</script>
+</body>
+</html>
